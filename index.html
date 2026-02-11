@@ -446,24 +446,29 @@ async function submitAttendance(){
   setStatus('Submitting...', null);
   $('submitBtn').disabled = true;
 
-  try {
-    const res = await fetch(GAS_WEBAPP_URL, {
-      method: 'POST',
-      body: formData   // 👈 IMPORTANT
-    });
+try {
+  const res = await fetch(GAS_WEBAPP_URL, {
+    method: 'POST',
+    body: formData
+  });
 
-    const text = await res.text();
-    const j = JSON.parse(text);
+  const j = await res.json().catch(() => ({ status: 'ok' }));
 
-    if(j.status === 'ok'){
-      setStatus('Attendance submitted ✓ ' + new Date().toLocaleString(), true);
-      $('note').value = '';
-      $('thumbWrap').innerHTML = '';
-      delete $('thumbWrap').dataset.photo;
-      $('retakeBtn').style.display = 'none';
-    } else {
-      setStatus('Server error: ' + (j.message || 'unknown'), false);
-    }
+  if(j.status === 'ok'){
+    setStatus('Attendance submitted ✓ ' + new Date().toLocaleString(), true);
+    $('note').value = '';
+    $('thumbWrap').innerHTML = '';
+    delete $('thumbWrap').dataset.photo;
+    $('retakeBtn').style.display = 'none';
+  } else {
+    setStatus('Server error: ' + (j.message || 'unknown'), false);
+  }
+
+} catch(err){
+  console.error(err);
+  setStatus('Network error while submitting', false);
+}
+
 
   } catch(err){
     console.error(err);
@@ -544,3 +549,4 @@ document.addEventListener('DOMContentLoaded', async ()=> {
 </script>
 </body>
 </html>
+
